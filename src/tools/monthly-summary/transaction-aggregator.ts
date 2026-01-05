@@ -16,12 +16,12 @@ export class MonthlySummaryTransactionAggregator {
       }
 
       const date = new Date(transaction.date);
-      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const yearMonth = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
 
       if (!monthlyData[yearMonth]) {
         monthlyData[yearMonth] = {
-          year: date.getFullYear(),
-          month: date.getMonth() + 1,
+          year: date.getUTCFullYear(),
+          month: date.getUTCMonth() + 1,
           income: 0,
           expenses: 0,
           investments: 0,
