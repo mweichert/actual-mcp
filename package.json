@@ -1,0 +1,40 @@
+{
+  "name": "actual-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Actual Budget API",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "actual-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mweichert/actual-mcp.git"
+  },
+  "keywords": ["mcp", "actual-budget", "cli", "model-context-protocol"],
+  "author": "mweichert",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mweichert/actual-mcp/issues"
+  },
+  "homepage": "https://github.com/mweichert/actual-mcp#readme",
+  "dependencies": {
+    "@actual-app/api": "^26.1.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
