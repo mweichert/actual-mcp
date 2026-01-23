@@ -8,8 +8,13 @@
     "actual-mcp": "./dist/index.js"
   },
   "scripts": {
+    "extract-api": "npx tsx scripts/extract-api-methods.ts",
+    "generate-descriptions": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts",
+    "check-descriptions": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts --check",
+    "generate-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts && npx tsx scripts/generate-manifest.ts",
+    "check-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts --check && npx tsx scripts/generate-manifest.ts --check",
     "build": "tsc",
-    "prepare": "npm run build",
+    "prepare": "husky",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts"
   },
@@ -17,7 +22,12 @@
     "type": "git",
     "url": "git+https://github.com/mweichert/actual-mcp.git"
   },
-  "keywords": ["mcp", "actual-budget", "cli", "model-context-protocol"],
+  "keywords": [
+    "mcp",
+    "actual-budget",
+    "cli",
+    "model-context-protocol"
+  ],
   "author": "mweichert",
   "license": "MIT",
   "bugs": {
@@ -31,6 +41,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "husky": "^9.1.7",
+    "ts-morph": "^27.0.2",
     "tsx": "^4.0.0",
     "typescript": "^5.7.0"
   },

@@ -1,0 +1,416 @@
+{
+  "runImport": {
+    "description": "Execute a bulk import operation within an import context. This wraps import operations with proper start/finish handling and rollback on error. Note: This method takes a callback function and is not callable via MCP.",
+    "params": {
+      "budgetName": "The name of the budget being imported. Used for identification during the import process.",
+      "func": "An async function containing the import operations. If an error occurs, the import is aborted and changes are rolled back."
+    },
+    "returns": "Resolves when the import is complete. Throws if the import fails.",
+    "category": "transactions"
+  },
+  "loadBudget": {
+    "description": "Load an existing budget file by its ID. This must be called before performing any operations on a budget. The budget ID can be obtained from getBudgets().",
+    "params": {
+      "budgetId": "The unique identifier of the budget to load. This is the id field from the budget object returned by getBudgets()."
+    },
+    "returns": "Resolves when the budget is successfully loaded. Throws an error if the budget cannot be found or loaded.",
+    "category": "lifecycle"
+  },
+  "downloadBudget": {
+    "description": "Download a budget from the sync server using its sync ID. This is useful for accessing budgets that exist on the server but are not yet available locally.",
+    "params": {
+      "syncId": "The sync ID of the budget to download. IMPORTANT: This is the groupId from the getBudgets() response, NOT the cloudFileId.",
+      "options": "Optional configuration object. If the budget is encrypted, provide an object with a password property to decrypt it."
+    },
+    "returns": "Resolves when the budget is successfully downloaded. Throws an error if download fails or password is incorrect.",
+    "category": "lifecycle"
+  },
+  "getBudgets": {
+    "description": "Retrieve a list of all available budgets. This includes both local budgets and remote budgets from the sync server. Use this to discover budget IDs for loading.",
+    "params": {},
+    "returns": "An array of budget file objects containing id, name, groupId (used as syncId for downloadBudget), and other metadata about each available budget.",
+    "category": "lifecycle"
+  },
+  "sync": {
+    "description": "Synchronize the currently loaded budget with the sync server. This uploads local changes and downloads any changes made on other devices. Should be called periodically and before closing the budget.",
+    "params": {},
+    "returns": "Resolves when synchronization is complete. May throw if there are sync conflicts or network issues.",
+    "category": "lifecycle"
+  },
+  "runBankSync": {
+    "description": "Trigger a bank sync operation to download new transactions from connected bank accounts. This uses configured bank connections (GoCardless, SimpleFin, etc.).",
+    "params": {
+      "args": "Optional configuration object. If accountId is provided, only syncs that specific account. Otherwise syncs all connected accounts."
+    },
+    "returns": "Resolves when the bank sync is complete. New transactions will be imported automatically.",
+    "category": "bank-sync"
+  },
+  "batchBudgetUpdates": {
+    "description": "Execute multiple budget updates within a single batch operation for better performance. All budget operations inside the callback function are grouped together. Note: This method takes a callback function and is not callable via MCP.",
+    "params": {
+      "func": "An async function containing the budget operations to batch together. All setBudgetAmount and setBudgetCarryover calls inside this function are batched."
+    },
+    "returns": "Resolves when all batched operations are complete.",
+    "category": "budget"
+  },
+  "aqlQuery": {
+    "description": "Execute an AQL (Actual Query Language) query against the budget database. This is the primary way to perform complex queries on budget data. Build queries using the q() query builder.",
+    "params": {
+      "query": "An AQL query object built using the q() query builder. Example: q('transactions').filter({ amount: { $lt: 0 } }).select('*')"
+    },
+    "returns": "An object containing a data array with the query results. The structure depends on the query selections.",
+    "category": "query"
+  },
+  "getBudgetMonths": {
+    "description": "Get a list of all months that have budget data. Returns months in YYYY-MM format. Use this to discover which months have been budgeted.",
+    "params": {},
+    "returns": "An array of month strings in YYYY-MM format (e.g., ['2024-01', '2024-02', '2024-03']).",
+    "category": "budget"
+  },
+  "getBudgetMonth": {
+    "description": "Get detailed budget information for a specific month, including all category budgets, spending, and balances. Returns comprehensive budget data with category groups.",
+    "params": {
+      "month": "The month to retrieve in YYYY-MM format (e.g., '2024-01')."
+    },
+    "returns": "A budget month object containing month, incomeAvailable, toBudget, totalBudgeted, totalSpent, totalBalance, and categoryGroups with their categories including budgeted amounts, spent amounts, and balances.",
+    "category": "budget"
+  },
+  "setBudgetAmount": {
+    "description": "Set the budgeted amount for a specific category in a specific month. The amount is in integer format representing cents (e.g., 10000 = $100.00).",
+    "params": {
+      "month": "The month to set the budget for in YYYY-MM format.",
+      "categoryId": "The UUID of the category to budget for.",
+      "value": "The amount to budget as an integer in cents (e.g., 10000 for $100.00)."
+    },
+    "returns": "Resolves when the budget amount is successfully set.",
+    "category": "budget"
+  },
+  "setBudgetCarryover": {
+    "description": "Enable or disable budget carryover for a specific category in a specific month. When enabled, any remaining budget at the end of the month rolls over to the next month.",
+    "params": {
+      "month": "The month to set carryover for in YYYY-MM format.",
+      "categoryId": "The UUID of the category to set carryover for.",
+      "flag": "True to enable carryover, false to disable it."
+    },
+    "returns": "Resolves when the carryover setting is updated.",
+    "category": "budget"
+  },
+  "addTransactions": {
+    "description": "Add new transactions to an account. Unlike importTransactions, this method does not perform duplicate detection based on imported_id. Amounts are integers in cents.",
+    "params": {
+      "accountId": "The UUID of the account to add transactions to.",
+      "transactions": "An array of transaction objects to add. Each should have date (YYYY-MM-DD), amount (integer cents), and optionally payee, payee_name, category, notes, etc.",
+      "options": "Optional settings. learnCategories: if true, learns category assignments for future auto-categorization. runTransfers: if true, automatically links matching transfers between accounts."
+    },
+    "returns": "Returns 'ok' when transactions are successfully added.",
+    "category": "transactions"
+  },
+  "importTransactions": {
+    "description": "Import transactions into an account with duplicate detection. Uses imported_id to prevent importing the same transaction twice. Best for bank imports.",
+    "params": {
+      "accountId": "The UUID of the account to import transactions into.",
+      "transactions": "An array of transaction objects to import. Include imported_id for duplicate detection. Amount is in integer cents.",
+      "opts": "Options object. May include defaultCleared (whether new transactions are marked cleared) and dryRun (if true, returns what would be imported without actually importing)."
+    },
+    "returns": "An object with arrays of transaction IDs that were added and updated during the import.",
+    "category": "transactions"
+  },
+  "getTransactions": {
+    "description": "Retrieve transactions for a specific account within a date range. Returns all transactions including splits, transfers, and scheduled transactions.",
+    "params": {
+      "accountId": "The UUID of the account to get transactions from.",
+      "startDate": "The start date of the range in YYYY-MM-DD format (inclusive).",
+      "endDate": "The end date of the range in YYYY-MM-DD format (inclusive)."
+    },
+    "returns": "An array of transaction objects with all their properties including id, date, amount (integer cents), payee, category, notes, etc.",
+    "category": "transactions"
+  },
+  "updateTransaction": {
+    "description": "Update an existing transaction with new field values. Only the specified fields are updated; other fields remain unchanged.",
+    "params": {
+      "id": "The UUID of the transaction to update.",
+      "fields": "An object containing the fields to update. Common fields: date, amount, payee, category, notes, cleared, reconciled."
+    },
+    "returns": "Returns the updated transaction(s). May return multiple transactions if the update affected linked transfers or splits.",
+    "category": "transactions"
+  },
+  "deleteTransaction": {
+    "description": "Delete a transaction by its ID. This is a soft delete that marks the transaction as a tombstone for sync purposes.",
+    "params": {
+      "id": "The UUID of the transaction to delete."
+    },
+    "returns": "Returns the deleted transaction(s) as an array.",
+    "category": "transactions"
+  },
+  "getAccounts": {
+    "description": "Get all accounts in the budget, including checking, savings, credit cards, and off-budget accounts.",
+    "params": {},
+    "returns": "An array of account objects with id, name, offbudget (boolean), and closed (boolean) properties.",
+    "category": "accounts"
+  },
+  "createAccount": {
+    "description": "Create a new account in the budget. The account can be on-budget or off-budget.",
+    "params": {
+      "account": "The account object with name (required), offbudget (optional, default false), and closed (optional, default false).",
+      "initialBalance": "Optional initial balance as an integer in cents (e.g., 100000 for $1000.00). Creates an initial balance transaction if provided."
+    },
+    "returns": "The UUID of the newly created account.",
+    "category": "accounts"
+  },
+  "updateAccount": {
+    "description": "Update an existing account. Can change the name, off-budget status, or closed status.",
+    "params": {
+      "id": "The UUID of the account to update.",
+      "fields": "The fields to update: name, offbudget, and/or closed."
+    },
+    "returns": "Resolves when the account is successfully updated.",
+    "category": "accounts"
+  },
+  "closeAccount": {
+    "description": "Close an account. Any remaining balance can be transferred to another account or assigned to a category.",
+    "params": {
+      "id": "The UUID of the account to close.",
+      "transferAccountId": "Optional UUID of another account to transfer the remaining balance to.",
+      "transferCategoryId": "Optional UUID of a category to assign the remaining balance to (if not transferring to another account)."
+    },
+    "returns": "Resolves when the account is successfully closed.",
+    "category": "accounts"
+  },
+  "reopenAccount": {
+    "description": "Reopen a previously closed account, making it active again for transactions.",
+    "params": {
+      "id": "The UUID of the closed account to reopen."
+    },
+    "returns": "Resolves when the account is successfully reopened.",
+    "category": "accounts"
+  },
+  "deleteAccount": {
+    "description": "Permanently delete an account. This should only be used for accounts with no transactions. For accounts with history, use closeAccount instead.",
+    "params": {
+      "id": "The UUID of the account to delete."
+    },
+    "returns": "Resolves when the account is successfully deleted.",
+    "category": "accounts"
+  },
+  "getAccountBalance": {
+    "description": "Get the current balance of an account, optionally as of a specific date.",
+    "params": {
+      "id": "The UUID of the account to get the balance for.",
+      "cutoff": "Optional cutoff date. If provided, returns the balance as of that date. Otherwise returns the current balance."
+    },
+    "returns": "The account balance as an integer in cents (e.g., 150000 for $1500.00).",
+    "category": "accounts"
+  },
+  "getCategoryGroups": {
+    "description": "Get all category groups with their nested categories. This provides a hierarchical view of the budget structure.",
+    "params": {},
+    "returns": "An array of category group objects, each containing id, name, is_income, hidden, and a categories array with nested category objects.",
+    "category": "categories"
+  },
+  "createCategoryGroup": {
+    "description": "Create a new category group to organize related categories.",
+    "params": {
+      "group": "The category group object with name (required), is_income (optional), and hidden (optional)."
+    },
+    "returns": "The UUID of the newly created category group.",
+    "category": "categories"
+  },
+  "updateCategoryGroup": {
+    "description": "Update an existing category group. Can change the name, income status, or hidden status.",
+    "params": {
+      "id": "The UUID of the category group to update.",
+      "fields": "The fields to update: name, is_income, and/or hidden."
+    },
+    "returns": "Resolves when the category group is successfully updated.",
+    "category": "categories"
+  },
+  "deleteCategoryGroup": {
+    "description": "Delete a category group. Categories in this group can be optionally transferred to another category.",
+    "params": {
+      "id": "The UUID of the category group to delete.",
+      "transferCategoryId": "Optional UUID of a category to transfer all transactions from categories in this group to."
+    },
+    "returns": "Resolves when the category group is successfully deleted.",
+    "category": "categories"
+  },
+  "getCategories": {
+    "description": "Get all categories in the budget as a flat list, including both regular categories and category groups. For grouped categories only, use getCategoryGroups instead.",
+    "params": {},
+    "returns": "An array of category and category group objects with id, name, group_id (for categories), is_income, and hidden properties.",
+    "category": "categories"
+  },
+  "createCategory": {
+    "description": "Create a new category within a category group.",
+    "params": {
+      "category": "The category object with name (required), group_id (required), is_income (optional), and hidden (optional)."
+    },
+    "returns": "The UUID of the newly created category.",
+    "category": "categories"
+  },
+  "updateCategory": {
+    "description": "Update an existing category. Can change the name, group, income status, or hidden status.",
+    "params": {
+      "id": "The UUID of the category to update.",
+      "fields": "The fields to update: name, group_id, is_income, and/or hidden."
+    },
+    "returns": "An empty object on success, or an error object if a category with that name already exists.",
+    "category": "categories"
+  },
+  "deleteCategory": {
+    "description": "Delete a category. Transactions in this category can be optionally transferred to another category.",
+    "params": {
+      "id": "The UUID of the category to delete.",
+      "transferCategoryId": "Optional UUID of another category to transfer existing transactions to."
+    },
+    "returns": "An empty object on success, or an error object if there are issues (e.g., no categories left or category type mismatch).",
+    "category": "categories"
+  },
+  "getCommonPayees": {
+    "description": "Get the most commonly used payees, useful for autocomplete suggestions and quick selection.",
+    "params": {},
+    "returns": "An array of the most frequently used payee objects, sorted by usage frequency.",
+    "category": "payees"
+  },
+  "getPayees": {
+    "description": "Get all payees in the budget, including transfer payees and manually created payees.",
+    "params": {},
+    "returns": "An array of payee objects with id, name, and transfer_acct (if this is a transfer payee).",
+    "category": "payees"
+  },
+  "createPayee": {
+    "description": "Create a new payee. Payees are used to track who transactions are to/from.",
+    "params": {
+      "payee": "The payee object with name (required). Transfer_acct should not be set manually as it is managed by the system for transfer payees."
+    },
+    "returns": "The UUID of the newly created payee.",
+    "category": "payees"
+  },
+  "updatePayee": {
+    "description": "Update an existing payee. Typically used to rename a payee.",
+    "params": {
+      "id": "The UUID of the payee to update.",
+      "fields": "The fields to update, typically just name."
+    },
+    "returns": "Resolves when the payee is successfully updated.",
+    "category": "payees"
+  },
+  "deletePayee": {
+    "description": "Delete a payee. Transactions using this payee will have their payee cleared.",
+    "params": {
+      "id": "The UUID of the payee to delete."
+    },
+    "returns": "Resolves when the payee is successfully deleted.",
+    "category": "payees"
+  },
+  "mergePayees": {
+    "description": "Merge multiple payees into a single target payee. All transactions from the merged payees will be reassigned to the target payee.",
+    "params": {
+      "targetId": "The UUID of the payee to merge into. This payee will be kept.",
+      "mergeIds": "An array of payee UUIDs to merge into the target. These payees will be deleted after merge."
+    },
+    "returns": "Resolves when all payees are successfully merged and duplicates deleted.",
+    "category": "payees"
+  },
+  "getRules": {
+    "description": "Get all transaction rules in the budget. Rules automatically categorize, modify, or filter transactions based on conditions.",
+    "params": {},
+    "returns": "An array of rule objects with id, stage, conditionsOp, conditions array, and actions array.",
+    "category": "rules"
+  },
+  "getPayeeRules": {
+    "description": "Get all rules associated with a specific payee. These rules are triggered when transactions match this payee.",
+    "params": {
+      "id": "The UUID of the payee to get rules for."
+    },
+    "returns": "An array of rule objects that have conditions matching the specified payee.",
+    "category": "rules"
+  },
+  "createRule": {
+    "description": "Create a new transaction rule. Rules can automatically categorize transactions, set fields, or perform other actions based on conditions.",
+    "params": {
+      "rule": "The rule object with stage ('pre', null, or 'post'), conditionsOp ('and' or 'or'), conditions array, and actions array."
+    },
+    "returns": "The newly created rule object including its generated UUID.",
+    "category": "rules"
+  },
+  "updateRule": {
+    "description": "Update an existing rule. Can modify conditions, actions, stage, or conditionsOp. The entire rule is replaced.",
+    "params": {
+      "rule": "The complete rule object with id and all fields. The entire rule is replaced."
+    },
+    "returns": "The updated rule object.",
+    "category": "rules"
+  },
+  "deleteRule": {
+    "description": "Delete a transaction rule.",
+    "params": {
+      "id": "The UUID of the rule to delete."
+    },
+    "returns": "Returns true if the rule was successfully deleted.",
+    "category": "rules"
+  },
+  "holdBudgetForNextMonth": {
+    "description": "Hold a specified amount from the current month to be available in the next month. This is useful for setting aside money that will be needed soon.",
+    "params": {
+      "month": "The current month to hold funds from, in YYYY-MM format.",
+      "amount": "The amount to hold as an integer in cents (e.g., 50000 for $500.00)."
+    },
+    "returns": "Returns true if the hold was successfully created.",
+    "category": "budget"
+  },
+  "resetBudgetHold": {
+    "description": "Release any budget hold for the specified month, returning the held funds to the available balance. This undoes a previous holdBudgetForNextMonth call.",
+    "params": {
+      "month": "The month to reset the hold for, in YYYY-MM format."
+    },
+    "returns": "Resolves when the hold is successfully reset.",
+    "category": "budget"
+  },
+  "createSchedule": {
+    "description": "Create a new scheduled transaction. Schedules automatically create transactions at specified intervals.",
+    "params": {
+      "schedule": "The schedule object. Required fields: date (recurrence pattern), amountOp ('is', 'isapprox', or 'isbetween'). Optional: name, payee, account, amount, posts_transaction."
+    },
+    "returns": "The UUID of the newly created schedule.",
+    "category": "schedules"
+  },
+  "updateSchedule": {
+    "description": "Update an existing scheduled transaction.",
+    "params": {
+      "id": "The UUID of the schedule to update.",
+      "fields": "The fields to update. Can include name, date, amount, amountOp, payee, account, posts_transaction, completed.",
+      "resetNextDate": "If true, recalculates the next_date based on the new schedule settings. Default is false."
+    },
+    "returns": "The UUID of the updated schedule.",
+    "category": "schedules"
+  },
+  "deleteSchedule": {
+    "description": "Delete a scheduled transaction. Future scheduled instances will no longer be created.",
+    "params": {
+      "scheduleId": "The UUID of the schedule to delete."
+    },
+    "returns": "Resolves when the schedule is successfully deleted.",
+    "category": "schedules"
+  },
+  "getSchedules": {
+    "description": "Get all scheduled transactions in the budget. Schedules define recurring transactions that are automatically created.",
+    "params": {},
+    "returns": "An array of schedule objects with id, name, next_date, completed, posts_transaction, payee, account, amount, amountOp, and date properties.",
+    "category": "schedules"
+  },
+  "getIDByName": {
+    "description": "Look up the UUID of an entity by its name. Useful for finding IDs when you only know the display name.",
+    "params": {
+      "type": "The type of entity to look up: 'accounts', 'schedules', 'categories', or 'payees'.",
+      "name": "The name of the entity to find."
+    },
+    "returns": "The UUID of the matching entity, or null if no match is found.",
+    "category": "query"
+  },
+  "getServerVersion": {
+    "description": "Get the version of the sync server that the budget is connected to. Useful for checking compatibility.",
+    "params": {},
+    "returns": "An object with either a version string (e.g., '24.1.0') or an error property if the server is unreachable.",
+    "category": "query"
+  }
+}

@@ -3,3 +3,6 @@ dist/
 .env
 .env.local
 *.log
+
+# Generated (can be regenerated from types)
+src/api-methods.json
