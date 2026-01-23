@@ -10,7 +10,7 @@ export function registerExecuteAqlQueryTool(server: McpServer): void {
     "execute_aql_query",
     `Execute an AQL (Actual Query Language) query against the budget database.
 
-Unlike call_api_method with aqlQuery, this tool accepts a plain JSON query definition.
+Use get_aql_schema to discover available tables, fields, operators, and functions.
 
 Example - Get 10 uncategorized transactions:
 {
@@ -19,10 +19,7 @@ Example - Get 10 uncategorized transactions:
   "selectExpressions": ["id", "date", "amount", { "payee_name": "payee.name" }, { "account_name": "account.name" }],
   "orderExpressions": [{ "date": "desc" }],
   "limit": 10
-}
-
-Filter operators: $eq, $ne, $lt, $lte, $gt, $gte, $like, $oneof, $and, $or
-Tables: transactions, accounts, categories, payees, schedules, category_groups`,
+}`,
     {
       table: z.string().describe('Table to query: transactions, accounts, categories, payees, schedules, category_groups'),
       tableOptions: z.record(z.unknown()).optional().describe('Table options, e.g., { splits: "grouped" }'),
