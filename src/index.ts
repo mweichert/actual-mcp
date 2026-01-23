@@ -7,6 +7,7 @@ import { join } from "path";
 import { mkdirSync, existsSync } from "fs";
 import { registerListMethodsTool } from "./tools/list-methods.js";
 import { registerCallMethodTool } from "./tools/call-method.js";
+import { registerExecuteAqlQueryTool } from "./tools/execute-aql-query.js";
 
 function getDefaultDataDir(): string {
   const xdgDataHome = process.env.XDG_DATA_HOME || join(homedir(), ".local", "share");
@@ -69,6 +70,7 @@ export function setBudgetLoaded(loaded: boolean): void {
 // Register tools
 registerListMethodsTool(server);
 registerCallMethodTool(server);
+registerExecuteAqlQueryTool(server);
 
 // Graceful shutdown
 async function shutdown(): Promise<void> {
