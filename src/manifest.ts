@@ -70,7 +70,7 @@ export const manifest: MethodManifest[] = [
         type: 'string',
         required: true,
         description:
-          'The sync ID of the budget to download. This is the cloudFileId from remote budget listings.',
+          'The sync ID of the budget to download. This is the groupId from the getBudgets() response.',
       },
       {
         name: 'options',
