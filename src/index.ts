@@ -2,8 +2,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import * as api from "@actual-app/api";
+import { homedir } from "os";
+import { join } from "path";
+import { mkdirSync, existsSync } from "fs";
 import { registerListMethodsTool } from "./tools/list-methods.js";
 import { registerCallMethodTool } from "./tools/call-method.js";
+
+function getDefaultDataDir(): string {
+  const xdgDataHome = process.env.XDG_DATA_HOME || join(homedir(), ".local", "share");
+  return join(xdgDataHome, "actual-mcp");
+}
 
 const server = new McpServer({
   name: "actual-budget-mcp",
@@ -16,12 +24,18 @@ let budgetLoaded = false;
 export async function ensureInitialized(): Promise<void> {
   if (initialized) return;
 
-  const dataDir = process.env.ACTUAL_DATA_DIR || "/data";
+  const dataDir = process.env.ACTUAL_DATA_DIR || getDefaultDataDir();
   const serverURL = process.env.ACTUAL_SERVER_URL;
   const password = process.env.ACTUAL_PASSWORD;
 
   if (!serverURL) {
     throw new Error("ACTUAL_SERVER_URL environment variable is required");
+  }
+
+  // Ensure data directory exists
+  if (!existsSync(dataDir)) {
+    mkdirSync(dataDir, { recursive: true });
+    console.error(`Created data directory: ${dataDir}`);
   }
 
   await api.init({
@@ -74,7 +88,7 @@ async function main(): Promise<void> {
   await server.connect(transport);
   console.error("Actual Budget MCP server started");
   console.error(`Server URL: ${process.env.ACTUAL_SERVER_URL || "(not set)"}`);
-  console.error(`Data dir: ${process.env.ACTUAL_DATA_DIR || "/data"}`);
+  console.error(`Data dir: ${process.env.ACTUAL_DATA_DIR || getDefaultDataDir()}`);
   console.error(`Budget ID: ${process.env.ACTUAL_BUDGET_ID || "(auto-detect)"}`);
 }
 
