@@ -14,7 +14,7 @@
     "generate-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts && npx tsx scripts/generate-manifest.ts",
     "check-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts --check && npx tsx scripts/generate-manifest.ts --check",
     "build": "tsc",
-    "prepare": "husky",
+    "prepare": "npm run build && husky",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts"
   },
