@@ -9,6 +9,7 @@
   },
   "scripts": {
     "extract-api": "npx tsx scripts/extract-api-methods.ts",
+    "extract-aql-schema": "npx tsx scripts/extract-aql-schema.ts",
     "generate-descriptions": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts",
     "check-descriptions": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts --check",
     "generate-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts && npx tsx scripts/generate-manifest.ts",

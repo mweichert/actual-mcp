@@ -1,0 +1,648 @@
+{
+  "tables": {
+    "transactions": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "is_parent": {
+          "type": "boolean"
+        },
+        "is_child": {
+          "type": "boolean"
+        },
+        "parent_id": {
+          "type": "id"
+        },
+        "account": {
+          "type": "id",
+          "ref": "accounts",
+          "required": true
+        },
+        "category": {
+          "type": "id",
+          "ref": "categories"
+        },
+        "amount": {
+          "type": "integer",
+          "required": true
+        },
+        "payee": {
+          "type": "id",
+          "ref": "payees"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "date": {
+          "type": "date",
+          "required": true
+        },
+        "imported_id": {
+          "type": "string"
+        },
+        "error": {
+          "type": "json"
+        },
+        "imported_payee": {
+          "type": "string"
+        },
+        "starting_balance_flag": {
+          "type": "boolean"
+        },
+        "transfer_id": {
+          "type": "id"
+        },
+        "sort_order": {
+          "type": "float"
+        },
+        "cleared": {
+          "type": "boolean"
+        },
+        "reconciled": {
+          "type": "boolean"
+        },
+        "tombstone": {
+          "type": "boolean"
+        },
+        "schedule": {
+          "type": "id",
+          "ref": "schedules"
+        },
+        "raw_synced_data": {
+          "type": "string"
+        }
+      },
+      "description": "Financial transactions with support for splits. Use is_parent/is_child/parent_id to identify split transactions."
+    },
+    "payees": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "transfer_acct": {
+          "type": "id",
+          "ref": "accounts"
+        },
+        "tombstone": {
+          "type": "boolean"
+        },
+        "favorite": {
+          "type": "boolean"
+        },
+        "learn_categories": {
+          "type": "boolean"
+        }
+      },
+      "description": "Payee/merchant information. transfer_acct links to the account for transfer payees."
+    },
+    "accounts": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "offbudget": {
+          "type": "boolean"
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "sort_order": {
+          "type": "float"
+        },
+        "tombstone": {
+          "type": "boolean"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "official_name": {
+          "type": "string"
+        },
+        "account_sync_source": {
+          "type": "string"
+        },
+        "last_reconciled": {
+          "type": "string"
+        },
+        "last_sync": {
+          "type": "string"
+        }
+      },
+      "description": "Bank accounts, credit cards, and other financial accounts. Use offbudget to filter tracking vs budget accounts."
+    },
+    "categories": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "is_income": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "group": {
+          "type": "id",
+          "ref": "category_groups"
+        },
+        "goal_def": {
+          "type": "string"
+        },
+        "template_settings": {
+          "type": "json"
+        },
+        "sort_order": {
+          "type": "float"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "Transaction categories for budgeting. Linked to category_groups via the group field."
+    },
+    "category_groups": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "is_income": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "sort_order": {
+          "type": "float"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "Groups that organize categories. Use is_income to identify income vs expense groups."
+    },
+    "schedules": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "id",
+          "ref": "rules",
+          "required": true
+        },
+        "next_date": {
+          "type": "date"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "posts_transaction": {
+          "type": "boolean"
+        },
+        "tombstone": {
+          "type": "boolean"
+        },
+        "_payee": {
+          "type": "id",
+          "ref": "payees"
+        },
+        "_account": {
+          "type": "id",
+          "ref": "accounts"
+        },
+        "_amount": {
+          "type": "json/fallback"
+        },
+        "_amountOp": {
+          "type": "string"
+        },
+        "_date": {
+          "type": "json/fallback"
+        },
+        "_conditions": {
+          "type": "json"
+        },
+        "_actions": {
+          "type": "json"
+        }
+      },
+      "description": "Recurring transaction schedules. Fields starting with _ are derived from the linked rule."
+    },
+    "rules": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "conditions_op": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "json"
+        },
+        "actions": {
+          "type": "json"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "Transaction rules with conditions and actions for auto-categorization."
+    },
+    "notes": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "description": "General notes storage keyed by id."
+    },
+    "preferences": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "description": "User preferences stored as key-value pairs."
+    },
+    "transaction_filters": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "conditions_op": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "json"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "Saved transaction filter definitions."
+    },
+    "custom_reports": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string"
+        },
+        "end_date": {
+          "type": "string"
+        },
+        "date_static": {
+          "type": "integer"
+        },
+        "date_range": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "group_by": {
+          "type": "string"
+        },
+        "sort_by": {
+          "type": "string"
+        },
+        "balance_type": {
+          "type": "string"
+        },
+        "show_empty": {
+          "type": "integer"
+        },
+        "show_offbudget": {
+          "type": "integer"
+        },
+        "show_hidden": {
+          "type": "integer"
+        },
+        "show_uncategorized": {
+          "type": "integer"
+        },
+        "trim_intervals": {
+          "type": "integer"
+        },
+        "include_current": {
+          "type": "integer"
+        },
+        "graph_type": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "json"
+        },
+        "conditions_op": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "json"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "color_scheme": {
+          "type": "json"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "User-defined custom report configurations."
+    },
+    "reflect_budgets": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "month": {
+          "type": "integer"
+        },
+        "category": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "carryover": {
+          "type": "integer"
+        },
+        "goal": {
+          "type": "integer"
+        },
+        "long_goal": {
+          "type": "integer"
+        }
+      },
+      "description": "Budget data for reflect budgeting method."
+    },
+    "zero_budgets": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "month": {
+          "type": "integer"
+        },
+        "category": {
+          "type": "string",
+          "ref": "categories"
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "carryover": {
+          "type": "integer"
+        },
+        "goal": {
+          "type": "integer"
+        },
+        "long_goal": {
+          "type": "integer"
+        }
+      },
+      "description": "Budget data for zero-based budgeting method."
+    },
+    "dashboard_pages": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "Dashboard page definitions for organizing widgets."
+    },
+    "dashboard": {
+      "fields": {
+        "id": {
+          "type": "id"
+        },
+        "dashboard_page_id": {
+          "type": "id",
+          "ref": "dashboard_pages"
+        },
+        "type": {
+          "type": "string",
+          "required": true
+        },
+        "width": {
+          "type": "integer",
+          "required": true
+        },
+        "height": {
+          "type": "integer",
+          "required": true
+        },
+        "x": {
+          "type": "integer",
+          "required": true
+        },
+        "y": {
+          "type": "integer",
+          "required": true
+        },
+        "meta": {
+          "type": "json"
+        },
+        "tombstone": {
+          "type": "boolean"
+        }
+      },
+      "description": "Dashboard widget configurations with position and size."
+    }
+  },
+  "operators": {
+    "$gte": {
+      "category": "comparison",
+      "description": "Greater than or equal.",
+      "example": "{ date: { $gte: '2024-01-01' } }"
+    },
+    "$lte": {
+      "category": "comparison",
+      "description": "Less than or equal.",
+      "example": "{ amount: { $lte: -1000 } }"
+    },
+    "$gt": {
+      "category": "comparison",
+      "description": "Greater than.",
+      "example": "{ amount: { $gt: 0 } }"
+    },
+    "$lt": {
+      "category": "comparison",
+      "description": "Less than.",
+      "example": "{ amount: { $lt: 0 } }"
+    },
+    "$eq": {
+      "category": "comparison",
+      "description": "Equals. Handles null comparison correctly (IS NULL).",
+      "example": "{ amount: { $eq: 0 } } or { category: null }"
+    },
+    "$ne": {
+      "category": "comparison",
+      "description": "Not equals. Handles null correctly (IS NOT NULL).",
+      "example": "{ category: { $ne: null } }"
+    },
+    "$oneof": {
+      "category": "membership",
+      "description": "In array (membership test). Values are deduplicated.",
+      "example": "{ category: { $oneof: ['cat-id-1', 'cat-id-2'] } }"
+    },
+    "$like": {
+      "category": "string",
+      "description": "Case-insensitive fuzzy string match with Unicode normalization.",
+      "example": "{ 'payee.name': { $like: '%amazon%' } }"
+    },
+    "$regexp": {
+      "category": "string",
+      "description": "Regular expression match.",
+      "example": "{ notes: { $regexp: '^Invoice #[0-9]+' } }"
+    },
+    "$notlike": {
+      "category": "string",
+      "description": "Negated case-insensitive fuzzy match.",
+      "example": "{ notes: { $notlike: '%transfer%' } }"
+    },
+    "$and": {
+      "category": "logical",
+      "description": "Logical AND of multiple conditions.",
+      "example": "{ $and: [{ amount: { $lt: 0 } }, { category: null }] }"
+    },
+    "$or": {
+      "category": "logical",
+      "description": "Logical OR of multiple conditions.",
+      "example": "{ $or: [{ amount: 0 }, { cleared: false }] }"
+    }
+  },
+  "functions": {
+    "$sum": {
+      "category": "aggregate",
+      "description": "Sum of values. Use in select with groupBy.",
+      "parameters": "field",
+      "example": "{ total: { $sum: '$amount' } }"
+    },
+    "$sumOver": {
+      "category": "aggregate",
+      "description": "Running sum as window function.",
+      "parameters": "field",
+      "example": "{ running_total: { $sumOver: '$amount' } }"
+    },
+    "$count": {
+      "category": "aggregate",
+      "description": "Count of non-null values.",
+      "parameters": "field",
+      "example": "{ count: { $count: '$id' } }"
+    },
+    "$substr": {
+      "category": "string",
+      "description": "Extract substring from a string field.",
+      "parameters": "field, start, length",
+      "example": "{ prefix: { $substr: ['$notes', 0, 10] } }"
+    },
+    "$lower": {
+      "category": "string",
+      "description": "Convert string to lowercase (Unicode-aware).",
+      "parameters": "field",
+      "example": "{ name_lower: { $lower: '$name' } }"
+    },
+    "$neg": {
+      "category": "numeric",
+      "description": "Negate a numeric value.",
+      "parameters": "field",
+      "example": "{ negated: { $neg: '$amount' } }"
+    },
+    "$abs": {
+      "category": "numeric",
+      "description": "Absolute value of a number.",
+      "parameters": "field",
+      "example": "{ abs_amount: { $abs: '$amount' } }"
+    },
+    "$idiv": {
+      "category": "numeric",
+      "description": "Integer division.",
+      "parameters": "dividend, divisor",
+      "example": "{ dollars: { $idiv: ['$amount', 100] } }"
+    },
+    "$id": {
+      "category": "utility",
+      "description": "Identity function, returns the value unchanged.",
+      "parameters": "field",
+      "example": "{ id: { $id: '$id' } }"
+    },
+    "$day": {
+      "category": "date",
+      "description": "Cast/parse as full date (YYYY-MM-DD).",
+      "parameters": "field",
+      "example": "{ day: { $day: '$date' } }"
+    },
+    "$month": {
+      "category": "date",
+      "description": "Extract month from date (YYYY-MM).",
+      "parameters": "field",
+      "example": "{ month: { $month: '$date' } }"
+    },
+    "$year": {
+      "category": "date",
+      "description": "Extract year from date (YYYY).",
+      "parameters": "field",
+      "example": "{ year: { $year: '$date' } }"
+    },
+    "$condition": {
+      "category": "utility",
+      "description": "Embed filter conditions in expressions.",
+      "parameters": "filter_object",
+      "example": "{ is_expense: { $condition: { amount: { $lt: 0 } } } }"
+    },
+    "$nocase": {
+      "category": "string",
+      "description": "Case-insensitive collation for string comparison.",
+      "parameters": "field",
+      "example": "orderBy: [{ $nocase: '$name' }]"
+    },
+    "$literal": {
+      "category": "utility",
+      "description": "Force literal value interpretation (prevent field reference).",
+      "parameters": "value",
+      "example": "{ const: { $literal: 100 } }"
+    }
+  }
+}

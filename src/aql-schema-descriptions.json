@@ -1,0 +1,176 @@
+{
+  "tables": {
+    "transactions": {
+      "description": "Financial transactions with support for splits. Use is_parent/is_child/parent_id to identify split transactions."
+    },
+    "accounts": {
+      "description": "Bank accounts, credit cards, and other financial accounts. Use offbudget to filter tracking vs budget accounts."
+    },
+    "categories": {
+      "description": "Transaction categories for budgeting. Linked to category_groups via the group field."
+    },
+    "category_groups": {
+      "description": "Groups that organize categories. Use is_income to identify income vs expense groups."
+    },
+    "payees": {
+      "description": "Payee/merchant information. transfer_acct links to the account for transfer payees."
+    },
+    "schedules": {
+      "description": "Recurring transaction schedules. Fields starting with _ are derived from the linked rule."
+    },
+    "rules": {
+      "description": "Transaction rules with conditions and actions for auto-categorization."
+    },
+    "notes": {
+      "description": "General notes storage keyed by id."
+    },
+    "preferences": {
+      "description": "User preferences stored as key-value pairs."
+    },
+    "transaction_filters": {
+      "description": "Saved transaction filter definitions."
+    },
+    "custom_reports": {
+      "description": "User-defined custom report configurations."
+    },
+    "reflect_budgets": {
+      "description": "Budget data for reflect budgeting method."
+    },
+    "zero_budgets": {
+      "description": "Budget data for zero-based budgeting method."
+    },
+    "dashboard_pages": {
+      "description": "Dashboard page definitions for organizing widgets."
+    },
+    "dashboard": {
+      "description": "Dashboard widget configurations with position and size."
+    }
+  },
+  "operators": {
+    "$eq": {
+      "description": "Equals. Handles null comparison correctly (IS NULL).",
+      "example": "{ amount: { $eq: 0 } } or { category: null }"
+    },
+    "$ne": {
+      "description": "Not equals. Handles null correctly (IS NOT NULL).",
+      "example": "{ category: { $ne: null } }"
+    },
+    "$lt": {
+      "description": "Less than.",
+      "example": "{ amount: { $lt: 0 } }"
+    },
+    "$lte": {
+      "description": "Less than or equal.",
+      "example": "{ amount: { $lte: -1000 } }"
+    },
+    "$gt": {
+      "description": "Greater than.",
+      "example": "{ amount: { $gt: 0 } }"
+    },
+    "$gte": {
+      "description": "Greater than or equal.",
+      "example": "{ date: { $gte: '2024-01-01' } }"
+    },
+    "$oneof": {
+      "description": "In array (membership test). Values are deduplicated.",
+      "example": "{ category: { $oneof: ['cat-id-1', 'cat-id-2'] } }"
+    },
+    "$like": {
+      "description": "Case-insensitive fuzzy string match with Unicode normalization.",
+      "example": "{ 'payee.name': { $like: '%amazon%' } }"
+    },
+    "$notlike": {
+      "description": "Negated case-insensitive fuzzy match.",
+      "example": "{ notes: { $notlike: '%transfer%' } }"
+    },
+    "$regexp": {
+      "description": "Regular expression match.",
+      "example": "{ notes: { $regexp: '^Invoice #[0-9]+' } }"
+    },
+    "$and": {
+      "description": "Logical AND of multiple conditions.",
+      "example": "{ $and: [{ amount: { $lt: 0 } }, { category: null }] }"
+    },
+    "$or": {
+      "description": "Logical OR of multiple conditions.",
+      "example": "{ $or: [{ amount: 0 }, { cleared: false }] }"
+    }
+  },
+  "functions": {
+    "$sum": {
+      "description": "Sum of values. Use in select with groupBy.",
+      "parameters": "field",
+      "example": "{ total: { $sum: '$amount' } }"
+    },
+    "$sumOver": {
+      "description": "Running sum as window function.",
+      "parameters": "field",
+      "example": "{ running_total: { $sumOver: '$amount' } }"
+    },
+    "$count": {
+      "description": "Count of non-null values.",
+      "parameters": "field",
+      "example": "{ count: { $count: '$id' } }"
+    },
+    "$substr": {
+      "description": "Extract substring from a string field.",
+      "parameters": "field, start, length",
+      "example": "{ prefix: { $substr: ['$notes', 0, 10] } }"
+    },
+    "$lower": {
+      "description": "Convert string to lowercase (Unicode-aware).",
+      "parameters": "field",
+      "example": "{ name_lower: { $lower: '$name' } }"
+    },
+    "$neg": {
+      "description": "Negate a numeric value.",
+      "parameters": "field",
+      "example": "{ negated: { $neg: '$amount' } }"
+    },
+    "$abs": {
+      "description": "Absolute value of a number.",
+      "parameters": "field",
+      "example": "{ abs_amount: { $abs: '$amount' } }"
+    },
+    "$idiv": {
+      "description": "Integer division.",
+      "parameters": "dividend, divisor",
+      "example": "{ dollars: { $idiv: ['$amount', 100] } }"
+    },
+    "$id": {
+      "description": "Identity function, returns the value unchanged.",
+      "parameters": "field",
+      "example": "{ id: { $id: '$id' } }"
+    },
+    "$day": {
+      "description": "Cast/parse as full date (YYYY-MM-DD).",
+      "parameters": "field",
+      "example": "{ day: { $day: '$date' } }"
+    },
+    "$month": {
+      "description": "Extract month from date (YYYY-MM).",
+      "parameters": "field",
+      "example": "{ month: { $month: '$date' } }"
+    },
+    "$year": {
+      "description": "Extract year from date (YYYY).",
+      "parameters": "field",
+      "example": "{ year: { $year: '$date' } }"
+    },
+    "$condition": {
+      "description": "Embed filter conditions in expressions.",
+      "parameters": "filter_object",
+      "example": "{ is_expense: { $condition: { amount: { $lt: 0 } } } }"
+    },
+    "$nocase": {
+      "description": "Case-insensitive collation for string comparison.",
+      "parameters": "field",
+      "example": "orderBy: [{ $nocase: '$name' }]"
+    },
+    "$literal": {
+      "description": "Force literal value interpretation (prevent field reference).",
+      "parameters": "value",
+      "example": "{ const: { $literal: 100 } }"
+    }
+  }
+}
