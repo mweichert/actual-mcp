@@ -27,6 +27,7 @@ type Category = z.infer<typeof CategoryEnum>;
 export function registerListMethodsTool(server: McpServer): void {
   server.tool(
     "list_api_methods",
+    "Discover available Actual Budget API methods with their parameters, types, and descriptions. Call this BEFORE using call_api_method to understand which methods exist and how to use them. Methods are organized by category: lifecycle, budget, transactions, accounts, categories, payees, rules, schedules, query, and bank-sync.",
     {
       category: CategoryEnum.optional().default("all").describe(
         "Filter by category. Use 'all' to see all methods, or specify a category like 'accounts', 'transactions', etc."

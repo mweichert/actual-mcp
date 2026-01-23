@@ -22,6 +22,7 @@ const CALLBACK_METHODS = new Set(["batchBudgetUpdates", "runImport"]);
 export function registerCallMethodTool(server: McpServer): void {
   server.tool(
     "call_api_method",
+    "Call an Actual Budget API method by name. IMPORTANT: Before using this tool, call list_api_methods first to discover available methods, their parameters, and return types. Most methods require a budget to be loaded first - use getBudgets() to list available budgets, then downloadBudget(syncId) or loadBudget(budgetId) to load one.",
     {
       method: z
         .string()
