@@ -1,17 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Load the schema at module load time
-const schemaPath = join(__dirname, "../aql-schema.json");
-const aqlSchema = JSON.parse(readFileSync(schemaPath, "utf-8"));
+import aqlSchemaRaw from "../aql-schema.json" with { type: "json" };
 
 type Section = "all" | "tables" | "operators" | "functions";
+
+// Cast to allow string indexing
+const aqlSchema = aqlSchemaRaw as {
+  tables: Record<string, unknown>;
+  operators: Record<string, unknown>;
+  functions: Record<string, unknown>;
+};
 
 export function registerGetAqlSchemaTool(server: McpServer): void {
   server.tool(
