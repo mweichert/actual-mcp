@@ -10,7 +10,7 @@ export function registerExecuteAqlQueryTool(server: McpServer): void {
     "execute_aql_query",
     `Execute an AQL (Actual Query Language) query against the budget database.
 
-Use get_aql_schema to discover available tables, fields, operators, and functions.
+IMPORTANT: Before calling this tool, you MUST first call get_aql_schema to discover the exact table fields, operators, and function syntax. Do NOT assume field names or query syntax - the schema is the source of truth. Skipping this step will likely result in errors.
 
 Example - Get 10 uncategorized transactions:
 {
