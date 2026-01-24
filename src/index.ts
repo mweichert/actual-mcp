@@ -23,6 +23,7 @@ const server = new McpServer({
 
 let initialized = false;
 let budgetLoaded = false;
+let currentBudgetId: string | null = null;
 
 export async function ensureInitialized(): Promise<void> {
   if (initialized) return;
@@ -54,6 +55,7 @@ export async function ensureInitialized(): Promise<void> {
   if (budgetId) {
     await api.loadBudget(budgetId);
     budgetLoaded = true;
+    currentBudgetId = budgetId;
     console.error(`Loaded budget: ${budgetId}`);
   }
 }
@@ -66,8 +68,32 @@ export function isBudgetLoaded(): boolean {
   return budgetLoaded;
 }
 
-export function setBudgetLoaded(loaded: boolean): void {
+export function getCurrentBudgetId(): string | null {
+  return currentBudgetId;
+}
+
+export function setBudgetLoaded(loaded: boolean, budgetId?: string): void {
   budgetLoaded = loaded;
+  currentBudgetId = loaded ? (budgetId ?? null) : null;
+}
+
+export async function ensureBudgetLoaded(budgetId?: string): Promise<void> {
+  await ensureInitialized();
+
+  // No budget_id provided and a budget is already loaded - use current
+  if (!budgetId && budgetLoaded) return;
+
+  // No budget_id provided and no budget loaded - error
+  if (!budgetId && !budgetLoaded) {
+    throw new Error("No budget loaded. Provide budget_id or call loadBudget first.");
+  }
+
+  // budget_id matches current - no-op
+  if (budgetId === currentBudgetId) return;
+
+  // Load the requested budget (budgetId is guaranteed to be defined at this point)
+  await api.loadBudget(budgetId!);
+  setBudgetLoaded(true, budgetId);
 }
 
 // Register tools

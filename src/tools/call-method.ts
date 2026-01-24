@@ -132,7 +132,8 @@ export function registerCallMethodTool(server: McpServer): void {
 
         // Track if a budget was loaded
         if (LOADS_BUDGET.has(method)) {
-          setBudgetLoaded(true);
+          const loadedBudgetId = method === 'loadBudget' ? params.budgetId as string : undefined;
+          setBudgetLoaded(true, loadedBudgetId);
         }
 
         return {

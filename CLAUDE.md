@@ -100,6 +100,24 @@ git push origin v0.1.0
 | `ACTUAL_DATA_DIR` | No | Local budget cache dir (default: `$XDG_DATA_HOME/actual-mcp` or `~/.local/share/actual-mcp`) |
 | `ACTUAL_BUDGET_ID` | No | Auto-load this budget on start |
 
+## Lazy Budget Loading
+
+Tools that require a budget (`execute_aql_query`, `get_rules`) support an optional `budget_id` parameter:
+
+| Scenario | Behavior |
+|----------|----------|
+| No `budget_id`, budget loaded | Uses current budget |
+| No `budget_id`, no budget | Returns error with hint |
+| `budget_id` matches current | Uses current (no-op) |
+| `budget_id` differs | Loads new budget, updates state |
+
+This makes the MCP server resilient to process restarts - each tool call can be self-contained.
+
+### State Tracking
+
+- `budgetLoaded: boolean` - Whether any budget is loaded
+- `currentBudgetId: string | null` - ID of the currently loaded budget
+
 ## Key Points
 
 - Entry point has shebang (`#!/usr/bin/env node`) for npx compatibility

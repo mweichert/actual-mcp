@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import * as api from "@actual-app/api";
-import { ensureInitialized, isBudgetLoaded } from "../index.js";
+import { ensureInitialized, ensureBudgetLoaded } from "../index.js";
 import { formatRulesToDsl, type NameResolver } from "../formatters/rule-dsl.js";
 
 export function registerGetRulesTool(server: McpServer): void {
@@ -23,6 +23,10 @@ To update a rule:
 2. Call call_api_method with getRule(id) to get full JSON structure
 3. Call call_api_method with updateRule to submit changes`,
     {
+      budget_id: z
+        .string()
+        .optional()
+        .describe("Budget ID to auto-load. If omitted, uses currently loaded budget."),
       format: z
         .enum(["dsl", "json"])
         .optional()
@@ -40,13 +44,13 @@ To update a rule:
         .describe("Resolve UUIDs to names (e.g., @cat:Groceries instead of raw UUID)"),
     },
     async (params): Promise<{ content: Array<{ type: "text"; text: string }>; isError?: boolean }> => {
-      await ensureInitialized();
-
-      if (!isBudgetLoaded()) {
+      try {
+        await ensureBudgetLoaded(params.budget_id);
+      } catch (error) {
         return {
           content: [{ type: "text" as const, text: JSON.stringify({
-            error: "No budget loaded.",
-            hint: "Call loadBudget(budgetId) first. Use getBudgets() to see available budgets."
+            error: error instanceof Error ? error.message : String(error),
+            hint: "Provide budget_id or call loadBudget first. Use getBudgets() to list budgets."
           }, null, 2) }],
           isError: true,
         };
