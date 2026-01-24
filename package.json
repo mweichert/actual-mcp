@@ -1,6 +1,6 @@
 {
   "name": "actual-mcp",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "MCP server for Actual Budget API",
   "type": "module",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "check-descriptions": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts --check",
     "generate-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts && npx tsx scripts/generate-manifest.ts",
     "check-manifest": "npm run extract-api && npx tsx scripts/generate-api-method-descriptions.ts --check && npx tsx scripts/generate-manifest.ts --check",
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/index.js",
     "prepare": "npm run build && husky",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts"
