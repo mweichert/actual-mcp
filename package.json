@@ -1,6 +1,6 @@
 {
   "name": "actual-mcp",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "MCP server for Actual Budget API",
   "type": "module",
   "main": "dist/index.js",
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/mweichert/actual-mcp#readme",
   "dependencies": {
-    "@actual-app/api": "https://github.com/mweichert/actual/releases/download/v26.1.0-fork.1/actual-app-api.tgz",
+    "@actual-app/api": "https://github.com/mweichert/actual/releases/download/0.0.1-fork.7/actual-app-api.tgz",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.25.0"
   },
