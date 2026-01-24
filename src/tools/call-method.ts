@@ -158,6 +158,23 @@ export function registerCallMethodTool(server: McpServer): void {
           ],
         };
       } catch (error) {
+        // Debug: log full error details to stderr before any processing
+        // This captures the raw error object including any additional properties
+        // (e.g., reason, meta) that may be lost when the error gets wrapped
+        console.error('API method error (raw):', JSON.stringify({
+          method,
+          params,
+          error: error instanceof Error ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            // Spread to capture any additional properties like reason, meta, etc.
+            ...(Object.fromEntries(
+              Object.entries(error).filter(([key]) => !['name', 'message', 'stack'].includes(key))
+            ))
+          } : error
+        }, null, 2));
+
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         const errorStack = error instanceof Error ? error.stack : undefined;
