@@ -42,10 +42,15 @@ export async function ensureInitialized(): Promise<void> {
     console.error(`Created data directory: ${dataDir}`);
   }
 
-  // Build init config based on available credentials
-  const initConfig = password
-    ? { dataDir, serverURL, password }
-    : { dataDir, serverURL, password: "" };
+  // Build init config
+  // verbose: false is critical - the API's default verbose mode logs to stdout,
+  // which corrupts MCP JSON-RPC protocol over stdio
+  const initConfig = {
+    dataDir,
+    serverURL,
+    password: password || "",
+    verbose: false,
+  };
 
   await api.init(initConfig);
   initialized = true;
