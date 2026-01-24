@@ -120,9 +120,31 @@ async function shutdown(): Promise<void> {
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
+// Global error handlers to prevent unhandled errors from crashing the MCP server
+// These catch errors that escape tool handler try/catch blocks (e.g., async callbacks
+// in @actual-app/api that reject promises outside our try/catch boundaries)
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught exception (server continuing):", error);
+  // Don't exit - keep the MCP connection alive
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled rejection at:", promise, "reason:", reason);
+  // Don't exit - keep the MCP connection alive
+});
+
 // Start server
 async function main(): Promise<void> {
   const transport = new StdioServerTransport();
+
+  // Monitor transport for debugging connection issues
+  transport.onerror = (error: Error) => {
+    console.error("MCP transport error:", error);
+  };
+  transport.onclose = () => {
+    console.error("MCP transport closed");
+  };
+
   await server.connect(transport);
   console.error("Actual Budget MCP server started");
   console.error(`Server URL: ${process.env.ACTUAL_SERVER_URL || "(not set)"}`);
