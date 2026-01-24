@@ -4,11 +4,14 @@ An MCP (Model Context Protocol) server that provides dynamic access to the [Actu
 
 ## Features
 
-- **Dynamic API Access**: Two tools expose the entire Actual Budget API:
+- **Dynamic API Access**: Tools expose the entire Actual Budget API:
   - `list_api_methods` - Discover available methods with documentation
   - `call_api_method` - Call any API method dynamically
+  - `execute_aql_query` - Run AQL (Actual Query Language) queries
+  - `get_aql_schema` - Get AQL schema for tables, fields, and functions
+  - `get_rules` - Get transaction rules in human-readable DSL format
 
-- **48 API Methods**: Full access to all Actual Budget operations:
+- **55 API Methods**: Full access to all Actual Budget operations:
   - Budget management (load, sync, view months)
   - Transactions (CRUD, import, bulk operations)
   - Accounts, Categories, Payees
@@ -101,23 +104,6 @@ Add to your `.mcp.json`:
         "ACTUAL_PASSWORD": "your-password"
       }
     }
-  }
-}
-```
-
-### With Letta Core (Docker)
-
-Add to your Letta Core MCP configuration:
-
-```json
-{
-  "mcp_server_type": "stdio",
-  "command": "node",
-  "args": ["/path/to/actual-mcp/dist/index.js"],
-  "env": {
-    "ACTUAL_SERVER_URL": "http://actual-server:5006",
-    "ACTUAL_PASSWORD": "your-password",
-    "ACTUAL_DATA_DIR": "/data"
   }
 }
 ```
