@@ -9,6 +9,7 @@ import { registerListMethodsTool } from "./tools/list-methods.js";
 import { registerCallMethodTool } from "./tools/call-method.js";
 import { registerExecuteAqlQueryTool } from "./tools/execute-aql-query.js";
 import { registerGetAqlSchemaTool } from "./tools/get-aql-schema.js";
+import { registerGetRulesTool } from "./tools/get-rules.js";
 
 function getDefaultDataDir(): string {
   const xdgDataHome = process.env.XDG_DATA_HOME || join(homedir(), ".local", "share");
@@ -40,11 +41,12 @@ export async function ensureInitialized(): Promise<void> {
     console.error(`Created data directory: ${dataDir}`);
   }
 
-  await api.init({
-    dataDir,
-    serverURL,
-    password,
-  });
+  // Build init config based on available credentials
+  const initConfig = password
+    ? { dataDir, serverURL, password }
+    : { dataDir, serverURL, password: "" };
+
+  await api.init(initConfig);
   initialized = true;
 
   // Auto-load budget if specified
@@ -73,6 +75,7 @@ registerListMethodsTool(server);
 registerCallMethodTool(server);
 registerExecuteAqlQueryTool(server);
 registerGetAqlSchemaTool(server);
+registerGetRulesTool(server);
 
 // Graceful shutdown
 async function shutdown(): Promise<void> {

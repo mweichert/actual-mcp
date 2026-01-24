@@ -916,6 +916,26 @@ export const manifest: MethodManifest[] = [
   },
 
   {
+    name: 'getRule',
+    description:
+      'Get a single rule by its ID. Returns the full rule object with conditions and actions.',
+    params: [
+    {
+      name: 'id',
+      type: 'string',
+      required: true,
+      description: 'The UUID of the rule to retrieve.',
+    }
+    ],
+    returns: {
+      type: 'Promise<{\n    id: string;\n} & import("./loot-core/src/types/models").NewRuleEntity>',
+      description:
+        'The rule object with id, stage, conditionsOp, conditions array, and actions array.',
+    },
+    category: 'rules' as const,
+  },
+
+  {
     name: 'getPayeeRules',
     description:
       'Get all rules associated with a specific payee. These rules are triggered when transactions match this payee.',
@@ -991,6 +1011,78 @@ export const manifest: MethodManifest[] = [
       type: 'Promise<boolean>',
       description:
         'Returns true if the rule was successfully deleted.',
+    },
+    category: 'rules' as const,
+  },
+
+  {
+    name: 'getTransactionsMatchingRule',
+    description:
+      'Find all transactions that match a specific rule\'s conditions. Useful for previewing which transactions a rule would affect.',
+    params: [
+    {
+      name: 'ruleId',
+      type: 'string',
+      required: true,
+      description: 'The ruleId parameter',
+    }
+    ],
+    returns: {
+      type: 'Promise<TransactionEntity[]>',
+      description:
+        'An array of transaction objects that match the rule\'s conditions.',
+    },
+    category: 'rules' as const,
+  },
+
+  {
+    name: 'previewRuleOnTransactions',
+    description:
+      'Preview what changes a rule would make to specific transactions without actually applying them. Useful for testing rules before applying.',
+    params: [
+    {
+      name: 'ruleId',
+      type: 'string',
+      required: true,
+      description: 'The UUID of the rule to preview.',
+    },
+    {
+      name: 'transactionIds',
+      type: 'string[]',
+      required: true,
+      description: 'An array of transaction UUIDs to preview the rule against.',
+    }
+    ],
+    returns: {
+      type: 'Promise<{ transaction: TransactionEntity; changes: Partial<TransactionEntity>; }[]>',
+      description:
+        'An array of preview objects showing the original and modified transaction states.',
+    },
+    category: 'rules' as const,
+  },
+
+  {
+    name: 'applyRuleToTransactions',
+    description:
+      'Apply a rule\'s actions to specific transactions. This modifies the transactions according to the rule\'s actions.',
+    params: [
+    {
+      name: 'ruleId',
+      type: 'string',
+      required: true,
+      description: 'The UUID of the rule to apply.',
+    },
+    {
+      name: 'transactionIds',
+      type: 'string[]',
+      required: true,
+      description: 'An array of transaction UUIDs to apply the rule to.',
+    }
+    ],
+    returns: {
+      type: 'Promise<{ updated: number; }>',
+      description:
+        'The number of transactions that were modified.',
     },
     category: 'rules' as const,
   },

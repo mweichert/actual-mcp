@@ -6,3 +6,6 @@ dist/
 
 # Generated (can be regenerated from types)
 src/api-methods.json
+
+# Internal planning docs
+docs/

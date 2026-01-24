@@ -349,6 +349,42 @@
     "returns": "Returns true if the rule was successfully deleted.",
     "category": "rules"
   },
+  "getRule": {
+    "description": "Get a single rule by its ID. Returns the full rule object with conditions and actions.",
+    "params": {
+      "id": "The UUID of the rule to retrieve."
+    },
+    "returns": "The rule object with id, stage, conditionsOp, conditions array, and actions array.",
+    "category": "rules"
+  },
+  "getTransactionsMatchingRule": {
+    "description": "Find all transactions that match a specific rule's conditions. Useful for previewing which transactions a rule would affect.",
+    "params": {
+      "id": "The UUID of the rule to match against.",
+      "startDate": "Optional start date for filtering transactions (YYYY-MM-DD format).",
+      "endDate": "Optional end date for filtering transactions (YYYY-MM-DD format)."
+    },
+    "returns": "An array of transaction objects that match the rule's conditions.",
+    "category": "rules"
+  },
+  "previewRuleOnTransactions": {
+    "description": "Preview what changes a rule would make to specific transactions without actually applying them. Useful for testing rules before applying.",
+    "params": {
+      "ruleId": "The UUID of the rule to preview.",
+      "transactionIds": "An array of transaction UUIDs to preview the rule against."
+    },
+    "returns": "An array of preview objects showing the original and modified transaction states.",
+    "category": "rules"
+  },
+  "applyRuleToTransactions": {
+    "description": "Apply a rule's actions to specific transactions. This modifies the transactions according to the rule's actions.",
+    "params": {
+      "ruleId": "The UUID of the rule to apply.",
+      "transactionIds": "An array of transaction UUIDs to apply the rule to."
+    },
+    "returns": "The number of transactions that were modified.",
+    "category": "rules"
+  },
   "holdBudgetForNextMonth": {
     "description": "Hold a specified amount from the current month to be available in the next month. This is useful for setting aside money that will be needed soon.",
     "params": {
