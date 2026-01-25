@@ -11,6 +11,17 @@ import { registerExecuteAqlQueryTool } from "./tools/execute-aql-query.js";
 import { registerGetAqlSchemaTool } from "./tools/get-aql-schema.js";
 import { registerGetRulesTool } from "./tools/get-rules.js";
 
+// Logging control - only log info/debug when ACTUAL_DEBUG is set
+const ACTUAL_DEBUG = process.env.ACTUAL_DEBUG !== undefined;
+
+export function logInfo(...args: unknown[]): void {
+  if (ACTUAL_DEBUG) console.error(...args);
+}
+
+export function logDebug(...args: unknown[]): void {
+  if (ACTUAL_DEBUG) console.error(...args);
+}
+
 function getDefaultDataDir(): string {
   const xdgDataHome = process.env.XDG_DATA_HOME || join(homedir(), ".local", "share");
   return join(xdgDataHome, "actual-mcp");
@@ -39,7 +50,7 @@ export async function ensureInitialized(): Promise<void> {
   // Ensure data directory exists
   if (!existsSync(dataDir)) {
     mkdirSync(dataDir, { recursive: true });
-    console.error(`Created data directory: ${dataDir}`);
+    logInfo(`Created data directory: ${dataDir}`);
   }
 
   // Build init config
@@ -61,7 +72,7 @@ export async function ensureInitialized(): Promise<void> {
     await api.loadBudget(budgetId);
     budgetLoaded = true;
     currentBudgetId = budgetId;
-    console.error(`Loaded budget: ${budgetId}`);
+    logInfo(`Loaded budget: ${budgetId}`);
   }
 }
 
@@ -110,7 +121,7 @@ registerGetRulesTool(server);
 
 // Graceful shutdown
 async function shutdown(): Promise<void> {
-  console.error("Shutting down...");
+  logInfo("Shutting down...");
   if (initialized) {
     await api.shutdown();
   }
@@ -142,14 +153,14 @@ async function main(): Promise<void> {
     console.error("MCP transport error:", error);
   };
   transport.onclose = () => {
-    console.error("MCP transport closed");
+    logInfo("MCP transport closed");
   };
 
   await server.connect(transport);
-  console.error("Actual Budget MCP server started");
-  console.error(`Server URL: ${process.env.ACTUAL_SERVER_URL || "(not set)"}`);
-  console.error(`Data dir: ${process.env.ACTUAL_DATA_DIR || getDefaultDataDir()}`);
-  console.error(`Budget ID: ${process.env.ACTUAL_BUDGET_ID || "(auto-detect)"}`);
+  logInfo("Actual Budget MCP server started");
+  logInfo(`Server URL: ${process.env.ACTUAL_SERVER_URL || "(not set)"}`);
+  logInfo(`Data dir: ${process.env.ACTUAL_DATA_DIR || getDefaultDataDir()}`);
+  logInfo(`Budget ID: ${process.env.ACTUAL_BUDGET_ID || "(auto-detect)"}`);
 }
 
 main().catch((error) => {

@@ -99,6 +99,7 @@ git push origin v0.1.0
 | `ACTUAL_PASSWORD` | No | Server password |
 | `ACTUAL_DATA_DIR` | No | Local budget cache dir (default: `$XDG_DATA_HOME/actual-mcp` or `~/.local/share/actual-mcp`) |
 | `ACTUAL_BUDGET_ID` | No | Auto-load this budget on start |
+| `ACTUAL_DEBUG` | No | Enable verbose logging (startup info, debug output) |
 
 ## Lazy Budget Loading
 

@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import * as api from "@actual-app/api";
 import { getMethodByName, type MethodManifest } from "../manifest.js";
-import { ensureInitialized, isBudgetLoaded, setBudgetLoaded } from "../index.js";
+import { ensureInitialized, isBudgetLoaded, setBudgetLoaded, logDebug } from "../index.js";
 
 // Methods that don't require a budget to be loaded first
 const NO_BUDGET_REQUIRED = new Set([
@@ -161,7 +161,8 @@ export function registerCallMethodTool(server: McpServer): void {
         // Debug: log full error details to stderr before any processing
         // This captures the raw error object including any additional properties
         // (e.g., reason, meta) that may be lost when the error gets wrapped
-        console.error('API method error (raw):', JSON.stringify({
+        // Only logs when ACTUAL_DEBUG is set
+        logDebug('API method error (raw):', JSON.stringify({
           method,
           params,
           error: error instanceof Error ? {
