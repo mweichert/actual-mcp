@@ -11,7 +11,6 @@ import { registerCallMethodTool } from "./tools/call-method.js";
 import { registerExecuteAqlQueryTool } from "./tools/execute-aql-query.js";
 import { registerGetAqlSchemaTool } from "./tools/get-aql-schema.js";
 import { registerGetRulesTool } from "./tools/get-rules.js";
-import { smartLoadBudget } from "./smart-budget.js";
 
 // Read version from package.json dynamically
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -100,23 +99,23 @@ export function setBudgetLoaded(loaded: boolean, budgetId?: string): void {
   currentBudgetId = loaded ? (budgetId ?? null) : null;
 }
 
-export async function ensureBudgetLoaded(budgetIdOrName?: string): Promise<void> {
+export async function ensureBudgetLoaded(budgetId?: string): Promise<void> {
   await ensureInitialized();
 
   // No budget_id provided and a budget is already loaded - use current
-  if (!budgetIdOrName && budgetLoaded) return;
+  if (!budgetId && budgetLoaded) return;
 
   // No budget_id provided and no budget loaded - error
-  if (!budgetIdOrName && !budgetLoaded) {
+  if (!budgetId && !budgetLoaded) {
     throw new Error("No budget loaded. Provide budget_id or call loadBudget first.");
   }
 
   // budget_id matches current - no-op
-  if (budgetIdOrName === currentBudgetId) return;
+  if (budgetId === currentBudgetId) return;
 
-  // Use smart loading (supports names, auto-downloads if needed)
-  const result = await smartLoadBudget(budgetIdOrName!);
-  setBudgetLoaded(true, result.id);
+  // Load the requested budget
+  await api.loadBudget(budgetId!);
+  setBudgetLoaded(true, budgetId);
 }
 
 // Register tools

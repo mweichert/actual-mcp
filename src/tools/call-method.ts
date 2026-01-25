@@ -3,7 +3,6 @@ import { z } from "zod";
 import * as api from "@actual-app/api";
 import { getMethodByName, type MethodManifest } from "../manifest.js";
 import { ensureInitialized, isBudgetLoaded, setBudgetLoaded, logDebug } from "../index.js";
-import { resolveParams } from "../id-resolver.js";
 import { smartLoadBudget } from "../smart-budget.js";
 
 // Methods that don't require a budget to be loaded first
@@ -24,7 +23,7 @@ const CALLBACK_METHODS = new Set(["batchBudgetUpdates", "runImport"]);
 export function registerCallMethodTool(server: McpServer): void {
   server.tool(
     "call_api_method",
-    "Call an Actual Budget API method by name. IMPORTANT: Before using this tool, call list_api_methods first to discover available methods, their parameters, and return types. Most methods require a budget to be loaded first - use getBudgets() to list available budgets, then downloadBudget(syncId) or loadBudget(budgetId) to load one.",
+    "Call an Actual Budget API method by name. IMPORTANT: Before using this tool, call list_api_methods first to discover available methods, their parameters, and return types. Most methods require a budget to be loaded first - use getBudgets() to list available budgets, then loadBudget(budgetId) to load one.",
     {
       method: z
         .string()
@@ -169,11 +168,8 @@ export function registerCallMethodTool(server: McpServer): void {
           };
         }
 
-        // Resolve names to IDs for parameters that support it
-        const resolvedParams = await resolveParams(params);
-
         // Build arguments from params based on method signature
-        const args = buildArgs(methodInfo, resolvedParams);
+        const args = buildArgs(methodInfo, params);
 
         // Call the method
         const result = await fn(...args);

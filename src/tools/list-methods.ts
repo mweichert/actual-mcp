@@ -63,12 +63,16 @@ export function registerListMethodsTool(server: McpServer): void {
         };
       }
 
-      const methods: MethodManifest[] =
+      // Methods to hide from the LLM (handled internally by smart loading)
+      const HIDDEN_METHODS = new Set(["downloadBudget"]);
+
+      const methods: MethodManifest[] = (
         category === "all"
           ? manifest
-          : getMethodsByCategory(category as Exclude<Category, "all">);
+          : getMethodsByCategory(category as Exclude<Category, "all">)
+      ).filter((m) => !HIDDEN_METHODS.has(m.name));
 
-      // Format for LLM consumption with enhanced ID parameter descriptions
+      // Format for LLM consumption
       const formatted = methods.map((m) => ({
         name: m.name,
         description: m.description,
@@ -77,10 +81,7 @@ export function registerListMethodsTool(server: McpServer): void {
           name: p.name,
           type: p.type,
           required: p.required,
-          // Enhance description for ID parameters to indicate names are accepted
-          description: p.name.endsWith("Id")
-            ? `${p.description} You can also pass the entity name instead of UUID - it will be resolved automatically.`
-            : p.description,
+          description: p.description,
         })),
         returns: m.returns,
       }));
@@ -94,7 +95,6 @@ export function registerListMethodsTool(server: McpServer): void {
                 count: formatted.length,
                 category: category,
                 methods: formatted,
-                note: "ID parameters (accountId, categoryId, payeeId, etc.) accept either UUIDs or entity names. Names are automatically resolved to IDs.",
               },
               null,
               2
