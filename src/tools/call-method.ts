@@ -9,16 +9,18 @@ import { smartLoadBudget } from "../smart-budget.js";
 const NO_BUDGET_REQUIRED = new Set([
   "getBudgets",
   "loadBudget",
-  "downloadBudget",
   "sync",
   "getServerVersion",
 ]);
 
 // Methods that load a budget as a side effect
-const LOADS_BUDGET = new Set(["loadBudget", "downloadBudget"]);
+const LOADS_BUDGET = new Set(["loadBudget"]);
 
 // Methods that take a callback function (not supported via MCP)
 const CALLBACK_METHODS = new Set(["batchBudgetUpdates", "runImport"]);
+
+// Methods hidden from API - handled internally by smart loading
+const HIDDEN_METHODS = new Set(["downloadBudget"]);
 
 export function registerCallMethodTool(server: McpServer): void {
   server.tool(
@@ -70,6 +72,26 @@ export function registerCallMethodTool(server: McpServer): void {
                 {
                   error: `Method '${method}' requires a callback function and cannot be called via MCP.`,
                   hint: "Use the individual methods that this function would wrap instead.",
+                },
+                null,
+                2
+              ),
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Check for hidden methods (handled internally)
+      if (HIDDEN_METHODS.has(method)) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                {
+                  error: `Method '${method}' is not available.`,
+                  hint: "Use loadBudget(budgetId) instead - it handles downloading automatically.",
                 },
                 null,
                 2
