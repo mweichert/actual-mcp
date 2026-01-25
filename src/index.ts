@@ -3,13 +3,20 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import * as api from "@actual-app/api";
 import { homedir } from "os";
-import { join } from "path";
-import { mkdirSync, existsSync } from "fs";
+import { join, dirname } from "path";
+import { mkdirSync, existsSync, readFileSync } from "fs";
+import { fileURLToPath } from "url";
 import { registerListMethodsTool } from "./tools/list-methods.js";
 import { registerCallMethodTool } from "./tools/call-method.js";
 import { registerExecuteAqlQueryTool } from "./tools/execute-aql-query.js";
 import { registerGetAqlSchemaTool } from "./tools/get-aql-schema.js";
 import { registerGetRulesTool } from "./tools/get-rules.js";
+import { smartLoadBudget } from "./smart-budget.js";
+
+// Read version from package.json dynamically
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packageJson = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
+const VERSION = packageJson.version;
 
 // Logging control - only log info/debug when ACTUAL_DEBUG is set
 const ACTUAL_DEBUG = process.env.ACTUAL_DEBUG !== undefined;
@@ -29,7 +36,7 @@ function getDefaultDataDir(): string {
 
 const server = new McpServer({
   name: "actual-budget-mcp",
-  version: "0.1.0",
+  version: VERSION,
 });
 
 let initialized = false;
@@ -93,23 +100,23 @@ export function setBudgetLoaded(loaded: boolean, budgetId?: string): void {
   currentBudgetId = loaded ? (budgetId ?? null) : null;
 }
 
-export async function ensureBudgetLoaded(budgetId?: string): Promise<void> {
+export async function ensureBudgetLoaded(budgetIdOrName?: string): Promise<void> {
   await ensureInitialized();
 
   // No budget_id provided and a budget is already loaded - use current
-  if (!budgetId && budgetLoaded) return;
+  if (!budgetIdOrName && budgetLoaded) return;
 
   // No budget_id provided and no budget loaded - error
-  if (!budgetId && !budgetLoaded) {
+  if (!budgetIdOrName && !budgetLoaded) {
     throw new Error("No budget loaded. Provide budget_id or call loadBudget first.");
   }
 
   // budget_id matches current - no-op
-  if (budgetId === currentBudgetId) return;
+  if (budgetIdOrName === currentBudgetId) return;
 
-  // Load the requested budget (budgetId is guaranteed to be defined at this point)
-  await api.loadBudget(budgetId!);
-  setBudgetLoaded(true, budgetId);
+  // Use smart loading (supports names, auto-downloads if needed)
+  const result = await smartLoadBudget(budgetIdOrName!);
+  setBudgetLoaded(true, result.id);
 }
 
 // Register tools

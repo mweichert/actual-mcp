@@ -68,7 +68,7 @@ export function registerListMethodsTool(server: McpServer): void {
           ? manifest
           : getMethodsByCategory(category as Exclude<Category, "all">);
 
-      // Format for LLM consumption
+      // Format for LLM consumption with enhanced ID parameter descriptions
       const formatted = methods.map((m) => ({
         name: m.name,
         description: m.description,
@@ -77,7 +77,10 @@ export function registerListMethodsTool(server: McpServer): void {
           name: p.name,
           type: p.type,
           required: p.required,
-          description: p.description,
+          // Enhance description for ID parameters to indicate names are accepted
+          description: p.name.endsWith("Id")
+            ? `${p.description} You can also pass the entity name instead of UUID - it will be resolved automatically.`
+            : p.description,
         })),
         returns: m.returns,
       }));
@@ -91,6 +94,7 @@ export function registerListMethodsTool(server: McpServer): void {
                 count: formatted.length,
                 category: category,
                 methods: formatted,
+                note: "ID parameters (accountId, categoryId, payeeId, etc.) accept either UUIDs or entity names. Names are automatically resolved to IDs.",
               },
               null,
               2

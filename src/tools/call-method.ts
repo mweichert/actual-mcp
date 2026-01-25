@@ -3,6 +3,8 @@ import { z } from "zod";
 import * as api from "@actual-app/api";
 import { getMethodByName, type MethodManifest } from "../manifest.js";
 import { ensureInitialized, isBudgetLoaded, setBudgetLoaded, logDebug } from "../index.js";
+import { resolveParams } from "../id-resolver.js";
+import { smartLoadBudget } from "../smart-budget.js";
 
 // Methods that don't require a budget to be loaded first
 const NO_BUDGET_REQUIRED = new Set([
@@ -83,6 +85,49 @@ export function registerCallMethodTool(server: McpServer): void {
         // Ensure API is initialized
         await ensureInitialized();
 
+        // Special handling for loadBudget - use smart loading
+        if (method === "loadBudget") {
+          const budgetIdOrName = (params.budgetId ?? params.id) as string;
+          if (!budgetIdOrName) {
+            return {
+              content: [
+                {
+                  type: "text" as const,
+                  text: JSON.stringify(
+                    {
+                      error: "Missing required parameter: budgetId",
+                      hint: "Provide budgetId (can be the budget name or UUID). Use getBudgets() to see available budgets.",
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+              isError: true,
+            };
+          }
+
+          const result = await smartLoadBudget(budgetIdOrName);
+          setBudgetLoaded(true, result.id);
+
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    method: method,
+                    result: `Loaded budget: ${result.name} (${result.id})`,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+          };
+        }
+
         // Check if budget needs to be loaded
         if (!NO_BUDGET_REQUIRED.has(method) && !isBudgetLoaded()) {
           return {
@@ -124,21 +169,19 @@ export function registerCallMethodTool(server: McpServer): void {
           };
         }
 
+        // Resolve names to IDs for parameters that support it
+        const resolvedParams = await resolveParams(params);
+
         // Build arguments from params based on method signature
-        const args = buildArgs(methodInfo, params);
+        const args = buildArgs(methodInfo, resolvedParams);
 
         // Call the method
         const result = await fn(...args);
 
         // Track if a budget was loaded
         if (LOADS_BUDGET.has(method)) {
-          // Extract budget ID based on method:
-          // - loadBudget: params.budgetId (manifest name) or params.id (API internal name)
-          // - downloadBudget: we don't know the resulting budget ID, leave as undefined
-          const loadedBudgetId = method === 'loadBudget'
-            ? (params.budgetId ?? params.id) as string
-            : undefined;
-          setBudgetLoaded(true, loadedBudgetId);
+          // downloadBudget: we don't know the resulting budget ID, leave as undefined
+          setBudgetLoaded(true, undefined);
         }
 
         return {
